@@ -4,10 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "build": "ng build -pro  --base-href /add/wechat/ -d /add/wechat --output-path ./wechat/  --extract-css --sourcemap",
+    "debug": "ng serve  --source-map --port 4400"
   },
   "private": true,
   "dependencies": {

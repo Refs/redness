@@ -48,13 +48,17 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true
+            },
+            "serve": {
+              "extractCss": true
             }
           }
         },
         "serve": {
+
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "red:build"
+            "browserTarget": "red:build:serve"
           },
           "configurations": {
             "production": {

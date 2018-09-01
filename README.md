@@ -1,27 +1,67 @@
 # Red
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.1.5.
+## fix the scss inspect in angular cli 6 (issues: 9099)
 
-## Development server
+### Global level scss
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+1 modify angular.json to add --extract-css, in 6.0 this argument is removed from ng serve
 
-## Code scaffolding
+```json
+// angular.json
+ "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+           ---
+          },
+          "configurations": {
+            "production": {
+              ---
+            },
+            "serve": {
+              "extractCss": true,
+               ---
+            }
+          }
+        },
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+2. hen change serve->options->browserTarget->project-name:build to project-name:build:serve
 
-## Build
+```json
+"serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "open": true,
+            "browserTarget": "<project-name>:build:serve"
+          },
+          "configurations": {
+            "production": {
+              ---
+            }
+          }
+        }
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+3. run : ng serve --source-map
 
-## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+### Component level Scss
 
-## Running end-to-end tests
+> You can temporarily fix this yourself editing changing the sourcemap option for both instances of postcss-loader in the following file
+`./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/webpack-configs/styles.js` change `sourceMap: cssSourceMap` to `sourceMap: cssSourceMap ? 'inline' : false`
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+```ts
+// line (201)
+const rules = baseRules.map(({ test, use }) => ({
+        exclude: globalStylePaths, test, use: [
+            { loader: 'raw-loader' },
+            {
+                loader: 'postcss-loader',
+                options: {
+                    ident: 'embedded',
+                    plugins: postcssPluginCreator,
+                    sourceMap: cssSourceMap ? 'inline' : false
+                }
 
-## Further help
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
