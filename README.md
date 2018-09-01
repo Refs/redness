@@ -269,5 +269,45 @@ yarn add @types/echarts -D
 1. the router config of lazyloading component 
 > https://stackoverflow.com/questions/39713864/404-pages-and-lazy-loading-in-angular2
 
+* In the router module
+```ts
+
+const routes: Routes = [
+  {
+    path: 'notfound',
+    loadChildren: '../notfound/notfound.module#NotfoundModule',
+  },
+  {
+    path: '**', redirectTo: '/notfound'
+  }
+];
+
+```
+
+* In the notfound module
+```ts
+const routes: Routes = [
+  { path: '', component: formContainers.NotfoundComponent },
+];
+```
+
+* In the lazyloading module
+```ts
+const routes: Routes = [
+  {
+    path: 'home',
+    component: fromContainers.HomeComponent,
+  },
+  // the '' is in the last
+  { path: '', pathMatch: 'full', redirectTo: 'home' },
+];
+
+```
+
+
 2. the 404 status of not found page
 > https://blog.thecodecampus.de/angular-universal-handle-404-set-status-codes/
+
+## Ngrx : How to share store among modules (main module / feature module)
+
+> every module has its own state branch, the component in the lazyloading module can easily select it's own branch state, But have can we select random state branch in the entire state tree
