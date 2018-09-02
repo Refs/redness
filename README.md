@@ -311,3 +311,262 @@ const routes: Routes = [
 ## Ngrx : How to share store among modules (main module / feature module)
 
 > every module has its own state branch, the component in the lazyloading module can easily select it's own branch state, But have can we select random state branch in the entire state tree
+
+> we can create a watcher services which watcher the state branch of the module that we want to select, then when the branch change we can receive the notice given by the watcher service in the lazyloading module. That's great !
+
+## rxjs
+
+1. custom pipeable operators
+
+```js
+const pow = (p: number) => (source: Observable<number>) => source.pipe(map => n ** p);
+// or 
+const pow = (p: number) => {
+  return ( source : Observable<number> ) => {
+    return source.pipe(map = >n ** p)
+  }
+}
+
+```
+
+```js
+source$.pipe(
+  filter( x => x> 100),
+  pow(3)
+).subscribe( x => console.log(x) );
+
+```
+
+2. New Feature in 6.0
+
+* New unhandled error behavior
+  + Old and Busted: If an observable errors with no error handler  ... rethrow the error `synchronously`
+  + New Hotness: If an observable errors with no error handler  ... rethrow the error `asynchronously`
+
+  `badSource$.subscribe(nextFn, handleError, completeFn)`
+
+* the rethrow the error `synchronously` could cause a bug
+
+> https://stackblitz.com/edit/angular-rxjs-prod-interference-tyxcce?file=app/app.component.ts
+
+```ts
+import { Component, Injectable } from '@angular/core';
+import { interval } from 'rxjs/observable/interval';
+import { share, map, filter } from 'rxjs/operators';
+
+@Injectable()
+export class JeffCrossService {
+  private _source$ = interval(100).pipe(
+    map(() => Math.round(Math.random() * 100)),
+    share()
+  );
+
+  getAmazingStuff() {
+    return this._source$;
+  }
+}
+
+@Component({
+  selector: 'misko-comp',
+  template: '<div>Misko: {{display$ | async}}</div>',
+})
+export class MiskoComponent<T> {
+  display$ = this.service.getAmazingStuff().pipe(
+    filter(value => value > 50)
+  )
+  
+  constructor(private service: JeffCrossService) {}
+}
+
+@Component({
+  selector: 'ladyleet-comp',
+  template: '<div>{{display$ | async}}</div>',
+})
+export class LadyLeetComponent<T> {
+  display$ = this.service.getAmazingStuff().pipe(
+    filter(value => value < 50)
+  )
+  
+  constructor(private service: JeffCrossService) {}
+}
+
+@Component({
+  selector: 'shai-comp',
+  template: '<div>{{display$ | async}}</div>',
+})
+export class ShaiComponent<T> {
+  display$ = this.service.getAmazingStuff().pipe(
+    filter(value => {
+      if (value === 42) throw Error('haha');
+      return true;
+    })
+  )
+  
+  constructor(private service: JeffCrossService) {}
+}
+
+
+@Component({
+  selector: 'my-app',
+  templateUrl: './app.component.html',
+  styleUrls: [ './app.component.css' ]
+})
+export class AppComponent  {
+  name = 'Angular 5';
+}
+```
+
+  + What happended ?
+    - JeffCrossService.getAmazingStuff() returns a shared (multicast) Observable
+    - Multicasting loops over an array of Observers and notifies them all using a for-loop.
+    - ShaiComponent synchronously throws an error if JeffCrossService emits the number 42.
+    - if the synchronous error is unhandled , RxJS synchronously re-throws it. (If the synchronous error goes all the way down i the chain of observation and is unhandled or there is no error handler then it will be synchronously thrown)
+    - which means javaScript unwinds the callstack looking for a try/catch to handle the error
+    - This breaks the for-loop for the multicast and stops notifying observers
+    - Misko is sad and doesn't get his data updates
+  > Imaging if different teams developed these components and a separate team develop the service like figuring ot who is to blame for this problem it's a very very nasty bug to run across, unless you happen to have me working with you . 
+
+  + xjs 6 Solves this by scheduling the rethrwn 
+  
+ 
+
+* simplified imports
+
+  +  we will import everything that's a type or scheduler or a helper from 'rxjs', and all of the operators get imported from 'rxjs/operators' 
+    - rxjs
+     + Types: Observable, Subject, BehaviorSubject, etc.
+     + Creation methods: fromEvent, timer, interval, delay, concat, etc.
+     + Schedulers: asapScheduler, asyncScheduler, etc.
+     + Helpers: `pipe`, noop, identity, etc
+    
+    - rxjs/operators
+      + All operators: map, mergeMap, takeUtil, scan, and so on.
+
+  ```ts
+  import { interval, of } from 'rxjs';
+  import { filter, mergeMap, scan } from 'rxjs/operators';
+
+  interval(1000).pipe(
+    filter(x => x % 2 === 0).
+    mergeMap( x => of(x+1, x+2, x+3) ),
+    scan(s, x) => s+x, 0),
+  ).subscribe(x => console.log(x));
+
+  ```
+
+  + An exhaustive list of v6 import sites
+    - rxjs
+    - rxjs/operators
+    - rxjs/testing
+    - rxjs/websocket
+    - rxjs/ajax 
+
+* Deprecations (and removals)
+
+  + the reason one : To many way to do the same thing 
+
+  ```ts
+  // these are all ways to do basically what observable `of` does 
+  import { ArrayObservable } from 'rxjs/observable/ArrayObservable';
+  import { ScalarObservable } from 'rxjs/observable/ScalarObservable';
+  import { fromArray } from 'rxjs/observable/fromArray';
+  import { of } from 'rxjs/observable/of';
+  import { Observable } from 'rxjs/observable/Observable';
+  import 'rxjs/add/observable/of';
+
+  Observable.of('foo');
+  of('fo');
+  fromArray(['foo']);
+  new ScalarObservable('foo');
+  ScalarObservable.create('foo');
+  new ArrayObservable(['foo']);
+  ArrayObservable.create(['foo']);
+  
+  ```
+
+  + V6 there is one way to use something
+
+  ```ts
+  import { of } from 'rxjs';
+
+  of('foo');
+  
+  ```
+
+  + deprecate operators
+    - concat
+    - merge
+    - zip
+    - combineLatest
+
+* a new operator
+
+  + throwIfEmpty
+    -  if the observable completes without emitting any values, will throw a error down the chain of observation.
+    - id the observable emits even one value, the operator has no effect and is a pass-through
+
+  + example
+
+  > take all the button clicks until someone resizes the view and if no one clicks the button before the viewResize that said the error
+
+  ```ts
+  const mustClick$ = buttonClick$.pipe(
+    takeUntil(this.viewResize$),
+    throwIfEmpty(
+      () = new Error(' user did not click before resize  ')
+    )
+  )
+  
+  ```
+
+3. migration from rxjs 5 (important)
+
+> https://www.youtube.com/watch?v=JCXZhe6KsxQ
+
+* install rxjs-compat
+
+```bash
+# rxjs-compat provides a bridge to all of the old import and old types that existed in rxjs.5 
+npm install rxjs-compat
+
+```
+
+* ng update rxjs : install the latest rxjs and rxjs-compat
+
+* tslint to the rescue
+
+    + install rxjs-tslint
+
+    ```bash
+    npm install rxjs-tslint
+
+    # run tslint -fix (maybe more than once)
+
+    > ./node_modules/.bin/tslint -c migrate.tslint.json  --project src/tsconfig.app.json --fix
+
+    ```
+    + create a migrate.tslint.json
+
+    ```json
+    {
+      "ruleDirectory ": ["node_module/rxjs-tslint"],
+      "rules": {
+        "update-rxjs-imports": true,
+        "migrate-to-pipeable-operators": true,
+        "collapse-rxjs-imports": true
+      }
+    }
+    
+    ```
+
+    + run tslint fix (maybe more than once)
+
+    ```bash
+
+    > ./node_modules/.bin/tslint -c migrate.tslint.json  --project src/tsconfig.app.json --fix
+
+    ```
+
+    + after `ng serve`  we can remove the rxjs-compat package
+
+    ![](./img/rxjs.png)
