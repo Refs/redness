@@ -570,3 +570,99 @@ npm install rxjs-compat
     + after `ng serve`  we can remove the rxjs-compat package
 
     ![](./img/rxjs.png)
+
+
+## custom our own module
+
+1. Typescript component selector should be named undefined
+
+* If you are using angular-cli try to add your own prefix to the angular-cli.json:
+
+```bash
+  apps: [
+    {  ..., "prefix": "swiftlog"}
+  ]
+```
+
+2. also change your tslint config:
+
+```bash
+"component-selector": [true, "element", "swiftlog", "kebab-case"],
+
+```
+
+
+
+## mock data 
+
+> on the component develop process , we have to request some  data Apis , instead of node serve , we can use the mock service ; this is the necessary to develop the base template; 
+
+### json-server
+
+1. install 
+
+```ts
+ var db = {};
+  var files = fs.readdirSync(jsonfolder);
+  files.forEach(function (file) {
+      if (path.extname(jsonfolder + file) === '.json') {
+          db[path.basename(jsonfolder + file, '.json')] = require(path.join(jsonfolder,file));
+      }
+  });
+  // Returns an Express server
+  var server = jsonServer.create();
+  // Set default middlewares (logger, static, cors and no-cache)
+  server.use(jsonServer.defaults());
+  // Returns an Express router
+  var router = jsonServer.router(db);
+  server.use(router);
+  server.listen(port);
+
+```
+
+### @delon/mock alibaba
+
+1. install the @delon/mock
+
+```bash
+npm install mockjs@1.0.1-beta3 -D -s
+npm install @types/mockjs@1.0.0 -D -s
+npm install @delon/mock@1.3.3 -D -s
+npm install date-fns -D -s
+```
+
+
+```ts
+ // in the component
+ this.http.get('/api/list', { count: this.q.ps }).subscribe((res: any) => {
+    this.list = res.map(item => {
+      item.activeUser = this.formatWan(item.activeUser);
+      return item;
+    });
+    this.loading = false;
+  });
+
+```
+
+```ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+import { Observable } from 'rxjs/Observable';
+import { catchError } from 'rxjs/operators';
+import 'rxjs/add/observable/throw';
+
+import { Pizza } from '../models/pizza.model';
+
+@Injectable()
+export class PizzasService {
+  constructor(private http: HttpClient) {}
+
+  getPizzas(): Observable<Pizza[]> {
+    return this.http
+      .get<Pizza[]>(`/api/pizzas`)
+      .pipe(catchError((error: any) => Observable.throw(error.json())));
+  }
+
+}
+```

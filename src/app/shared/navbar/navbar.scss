@@ -1,0 +1,65 @@
+.mat-toolbar {
+  background: linear-gradient(120deg,#412bbe,#b11b77) #2b6ba7;
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,.3);
+  position: relative;
+  display: flex;
+  .mat-progress-bar {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 2px;
+  }
+  &>a{
+    color: white;
+  }
+}
+
+.mat-toolbar-row, .mat-toolbar-single-row {
+  height: 54px !important;
+}
+
+.logo {
+  margin: 0 10px;
+  a {
+    display: block;
+    cursor: pointer;
+    img {
+      height: 40px;
+      display: block;
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .navbar-hide-small {
+    display: none !important;
+  }
+
+  .navbar-show-small {
+    display: block !important;
+  }
+}
+
+@media (min-width: 560px) {
+  .navbar-hide-small {
+    display: block !important;
+  }
+
+  .navbar-show-small {
+    display: none !important;
+  }
+}
+
+.navbar-show-small {
+   background: linear-gradient(120deg,#412bbe,#b11b77) #2b6ba7;
+
+  .flex-wrap {
+    display: flex !important;
+    justify-content: space-around;
+    &>a {
+      color: white;
+    }
+  }
+}
+
+

@@ -14,15 +14,15 @@ export class PageHeaderComponent implements OnInit {
   public currentModuleRouter$: Observable<string>;
 
   constructor(
-    private store: Store<fromStore.RootState>
+    // private store: Store<fromStore.RootState>
   ) { }
 
   ngOnInit() {
-    this.currentPageRouter$ = this.store.pipe(
-      select(fromStore.getRouterPageLink)
-    );
-    this.currentModuleRouter$ = this.store.pipe(
-      select( fromStore.getRouterModuleLink )
-    );
+    // this.currentPageRouter$ = this.store.pipe(
+    //   select(fromStore.getRouterPageLink)
+    // );
+    // this.currentModuleRouter$ = this.store.pipe(
+    //   select( fromStore.getRouterModuleLink )
+    // );
   }
 }

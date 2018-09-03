@@ -1,0 +1,30 @@
+
+<nav>
+  <mat-toolbar>
+    <mat-progress-bar *ngIf="progressBarShow$ | async" mode="indeterminate"></mat-progress-bar>
+
+    <button style="color: rgb(235, 154, 154)" mat-icon-button>
+      <mat-icon>
+        menu
+      </mat-icon>
+    </button>
+    <div class="logo" >
+      <a routerLink="/">
+        <img class="collapsed" src="../../../assets/img/homepage/angular-white-transparent.svg" >
+      </a>
+    </div>
+    <a class="navbar-hide-small" mat-button *ngFor="let key of navMenu$ | async"
+     [routerLink]="key.link">{{key.des}}</a>
+
+     <a href="" mat-button style="margin-left: auto">登陆</a>
+  </mat-toolbar>
+</nav>
+
+<nav class="navbar-show-small">
+  <div class= "flex-wrap">
+      <a mat-button class="docs-navbar-link"
+      *ngFor="let key of navMenu$ | async"
+      [routerLink]="key.link">{{key.des}}</a>
+  </div>
+</nav>
+
