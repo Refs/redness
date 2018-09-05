@@ -25,7 +25,7 @@
         },
 ```
 
-2. hen change serve->options->browserTarget->project-name:build to project-name:build:serve
+2. then change serve->options->browserTarget->project-name:build to project-name:build:serve
 
 ```json
 "serve": {
@@ -666,3 +666,252 @@ export class PizzasService {
 
 }
 ```
+
+
+## Auth module (local storage)
+
+authentication is a critical piece when managing access to you application from handling initial login to checking each page during navigation, ngrx provides an architecture to handle this with structure and predictability  
+
+### Goals
+The goals which have to be covered when building user authentication with ngrx: 
+
+1. Handle authentication life cycle from logging in checking pages and logging out 
+
+2. Managing state for authenticated user
+  * when a man is the state for the authenticated user which includes capturing any information about the user that's returned from back end 
+
+3. Provide shared user information across component 
+ * since store is a global state container  , we can use it to share with components and services across our app 
+
+### Benefits
+
+1. `Great example of shared sate`
+  * Authentication is shared throughout the app , it can be changed from different area of that like if you logging out and you can hydrate this state if you're using it on mobile or server-side rendering
+
+2. `Independent of authentication scheme` , so whether you're using firebase or incognito or even a self hosted authentication service it works independent 
+
+3. `Reduce API calls` , because you can't be certain that your authentication states going to be valid for a certain amount of time , so instead of hitting your back-end API , when you're navigating between pages you can check the store first that transition easier and faster 
+
+4. `Can be package and shared`, a big thing is when developing multiple apps , you're normally using a common login package , so creating authentication in this way and using it you can use and share across these multiple apps depending on , as he has already implemented your scheme  
+
+### Actions
+
+1. `Descriptive` actions are meant to be descriptive , action descriptive unique events in your app and provide context to where those actions came from 
+2. ` Specific` actions are specific , because we're capturing certain events and we don't want them to be too generic 
+3. `Cause state changes` these state changes are handled by reducers to transition from one state to the next 
+4. `Trigger side effects`  side effects are where we connect with external resources and also provide actions back to the store 
+
+
+### Action Categories 
+
+It's good to break these actions in few categories: 
+
+1. `Auth Categories ` which is where we capture actions for handling the authenticated user including logging in and logging out 
+
+2. ` Authentication API ` these are requests and response that come back from the back-end
+
+3. ` Login Page ` we also capture actions about the specific UI events that happen on the login page when the user interacts were clicking buttons or other interactions that may occur
+
+Actions determine flow for UI events, writing these actions upfront allow you to map our entire user flows before even writing reducers or effects , so 
+
+![](./img/actions.png)
+
+### States 
+
+We're going to cover here are the login page and the authentication sate
+
+1. LoginPageState
+```ts
+interface LoginPageState {
+  // the pending property which can be used to disable the form or display spinners while the request is being processed  
+  pending: boolean;
+  // we also capture an error | any error messages to display that relevant information back to the user in case of a failure 
+  error: string | null;
+}
+
+```
+
+2. The authentication state
+
+```ts
+// that would contain what would returned back from the API upon successful authentication 
+interface UserModel {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// The UthState captured this user which want to authentication is successful and would hold any information about the current user , you notice in the AuthState that there isn't an explicit property about being logged in and then 
+interface AuthState {
+  user: UserModel | null;
+}
+
+```
+
+### SELECTORS
+
+Selector fall into two categories , `selector that get` and `selector that derive` .
+
+Selectors are pure function that are used to get simple and complex pieces of state , you use these selectors when you inject store to select() to connect state to your components 
+
+1. GET
+
+```ts
+const selectAuthUser = (state: AuthState) => state.user;
+
+```
+
+2. DERIVERS
+
+> Derive state is state that we can get inside from through existing information we already have . Wether the user is logged in or not can be derived from the information we already have using selector . So this way you don't have to add extra information into your state because that information is already there 
+
+```ts
+const selectIsLoggedIn = createSelector(selectAuthUser, user => !!user);
+
+```
+
+### state changes
+
+We modal sate changes through pure reducer functions , these reducer functions are easy to test because for given inputs you get a consistent output without side effects 
+
+1. Visualizing the state transitions from from going from an authenticated user to an authenticated state ,` we receive upon successful logging` , we will `receive a login success action` that we hear `in our reducer `and then we would `transition to an authenticated state`
+
+![](./img/state-change.png)
+
+2. `Login page State` 
+
+> In the login page we would do the same sate transitions when the user click the login button , we go from a pending state and in the case od a failure , we will return a login failure action and we would capture that action with an error message to display to the user 
+
+### EFFECTS
+
+Side effects are where you connect your actions to external request these also provide relevant data back to the store based on the result of those requests , so here we're going to process the authentication from login and handle logging out 
+
+1. handle login
+```ts
+@Effect()
+login$ = this.actions$
+  .ofType('[Login Page] Login ')
+  .pipe(
+    exhaustMap(auth => {
+      this.authService
+        .login(auth)
+        .pipe(
+          map(user => new LoginSuccess({user})),
+          catchError(error => of(new LoginFailure(error)))
+        )
+    })
+  )
+```
+
+2. handle logout
+
+```ts
+@Effect()
+logoutConfirmation$ = this.action$
+  .ofType('[Auth] Confirm Logout')
+  .pipe(
+    exhaustMap(()=>{
+      this.dialogService.open(LogoutPromptComponent)
+        .afterClosed()
+        .pipe(
+          map(confirmed => {
+            if(confirmed) {
+              return new LogoutConfirmed();
+            } else {
+              return new LogoutCancelled();
+            }
+          })
+        )
+    })
+  )
+```
+
+### Router
+
+We use the `router for side effects including`  redirecting the user when logging in and logging out and integration with route guards .
+
+1. router for login successful
+```ts
+// once the action comes in  , we can use the router to `perform a side effect `and navigate the user to an intended destination. 
+@Effect({dispatch: false })
+loginRedirect$ = this.action$
+  .ofType('[Auth API] Login Success')
+  .pipe(tap(()=>{
+    this.router.navigate(['/home'])
+  }))
+
+```
+
+2. router for logout action
+
+> if the user logs out we prompt them and the accept that prompt , then we can redirect the user back to the login page and their user session would be cleared 
+
+```ts
+@Effect({dispatch: false})
+logoutRedirect$ = this.action$
+  .ofType('[Auth API] Logout Complete')
+  .pipe(tap(() => {
+    this.router.navigate(['/login'])
+  }))
+```
+
+3. Router guard
+
+> Router guards are a way that you can prevent navigation between pages but we don't hit the actual api every time a user navigates between pages and so we can integrate it with the store. 
+> since we ca verify the authentication state will be valid for a certain amount of time , we can check the store first to see id there the user is logged in , and this handles when they navigate between pages and on like page reloads , so we check the store first and then as a fallback we hit the actual APi before we redirect the user  
+
+```ts
+export class AuthGuardServices implements CanActivate {
+  canActivate() {
+    return this.checkStoreAuthenticate()
+      .pipe(
+        mergeMap(storeAuth => {
+          if (storeAuth) return of(true);
+          return this.checkApiAuthentication();
+        })
+        map(storeOrApiAuth => {
+          if(!storeOrApiAuth) {
+            this.router.navigate('[/login]');
+            return false
+          }
+          return true
+        })
+      )
+  }
+}
+```
+
+
+## the Persist of ngrx store (state rehydrate)
+
+
+## Ng-Content directive
+
+`to solve the problem that we want put the user component inside the nav component`
+
+
+```html
+<!-- app.component.ts -->
+
+<app-home> Hello there! </app-home>
+
+
+```
+
+The `hello there` won't output to the screen , this has been deleted and the reason is whenever we get the  `<app-home> ` we're replacing it with the `component template content` so the `Hello there` will be overed by the content. 
+
+So what if I want to be able to nest a HTML or string inside the tag ? That is where the ng-content directive kicks in 
+
+```html
+<!-- app.component.html -->
+
+<p> home works </p>
+<ng-content></ng-content>
+
+```
+whenever the angular see the ng-content directive , it's going to look for the content with in the component tags , and output the content right in the `<ng-content>`
+  
+> https://www.youtube.com/watch?v=obnQPjd94sY&list=PLOa5YIicjJ-VlzkXRdduyxVrILmwc0jXK&index=5 
+
+
+

@@ -8,9 +8,6 @@ import { Observable } from 'rxjs';
 import { CommonsModule } from '../../commons/commons.module';
 import { ProcessBarService } from '../../commons/services/notifiers/process-bar.service';
 
-
-
-
 @Component({
   selector: 'red-navbar',
   templateUrl: './navbar.html',
