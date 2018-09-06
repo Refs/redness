@@ -57,6 +57,7 @@ import { AuthModule } from './auth/auth.module';
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    AuthModule,
     AppRoutingModule,
     AppMaterialModule,
     MOCKMODULE,
@@ -68,7 +69,6 @@ import { AuthModule } from './auth/auth.module';
     environment.production ? [] : StoreDevtoolsModule.instrument(),
     NavBarModule.forRoot(),
     CommonsModule.forRoot(),
-    AuthModule,
   ],
   providers: [
     { provide: RouterStateSerializer, useClass: CustomSerializer}

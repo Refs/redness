@@ -13,3 +13,8 @@ export const getUser = createSelector(
   selectAuthStatusState,
   fromUser.getUser
 )
+
+export const getLoggedIn = createSelector(
+  getUser,
+  user => !!user
+)

@@ -914,4 +914,129 @@ whenever the angular see the ng-content directive , it's going to look for the c
 > https://www.youtube.com/watch?v=obnQPjd94sY&list=PLOa5YIicjJ-VlzkXRdduyxVrILmwc0jXK&index=5 
 
 
+## the import of the eager module
 
+> https://angular.io/guide/router#module-import-order-matters
+
+when we import the AuthModule in the AppModule, we have to import it before the AppRoutingModule , that's concern. The order of route configuration matters. The router accepts the first route that matches a navigation request path.  `Notice that the AppRoutingModule is last`
+
+```ts
+imports: [
+  BrowserModule,
+  FormsModule,
+  HeroesModule,
+  AppRoutingModule
+],
+```
+
+
+## Angular Http Intercept
+
+> Http interceptors are basically introduced  in angular in around version 4.3 and they provide you with the ability to globally intercept the request and response that are sent through HTTP  
+
+> Every component you have in your application , whenever it calls some services which in return an observable of some kind of http request , we have to provide a function to handle the error 
+
+> All the authorization header and creation of a request we do at a service level , while the error handling which is an error response handling we done at the app component level  
+
+### The use of intercept
+
+suppose there is something in between the service and the node.js that can intercept any request. What we can do is to ask that particular interceptor to intercept each and individual request that is passing through it , add the header with the name authorization and value , and then pass it to the Express server.  In relation as we are handling each and individual error at a component level and building an error function foe each and individual method , what we can do is we can ask the intercept to intercept that is coming back from server and check if it has a particular kind of error like `501`, then redirect to the login page . So as we want a common behavior for `501 error` we can ask the intercept to do that , so we don't have to write the same logic in our app components method for each and individual call 
+
+### the implementation of intercept
+
+intercept is just kind of service
+
+`next.handle(req)`:   the handle method is provided by the interceptor or the HttpEvent , what it will do is it will pass the req to the next  intercept 
+
+```ts
+import { Injectable } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable()
+
+export class MyInterceptor implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next:HttpHandler): Observable<HttpEvent<any> {
+    return next.handle(req);
+  }
+}
+
+```
+
+```ts
+// app.module.ts
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { MyInterceptor } from './myInterceptor.service';
+
+@NgModule({
+  ---
+  providers: [
+    // we are defining that we have an HTTP_INTERCEPTOR , the class is myInterceptor and multi: true denotes that we have multiple interceptor .
+    // the ordering of the interceptors which you provide in the provider array will be the same and will be taken as the order which the request will be pass to interceptors , so the first object which you provide here will be the first class to take the request . in it can use next.handle(req) to pass the req to the next interceptor 
+    {provide: HTTP_INTERCEPTOR, useClass: MyInterceptor, multi: true}
+  ]
+})
+
+```
+
+1. In original the request parameter is immutable , we can't change the request but interceptor provides as a very unique solution or a method where we can change some portion or the some parameters of a request 
+
+```ts
+import { Injectable } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable()
+
+export class MyInterceptor implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next:HttpHandler): Observable<HttpEvent<any> {
+
+    // we will use the request clone() method , what it will do is to exactly copy our request .  clone provides few parameters , so we can create a meta object 
+    let request =  req.clone({
+       headers:new HttpHeaders().append('Authorization','abcd') 
+
+       body : undefined 
+    })
+
+    // to intercept the response we have a new method which is provided by rxjs 'do()' . do will be called when the response is ready  
+    return next.handle(request). next.handle(request).do(
+            (event:any) => {},
+            (error:any)=>{
+                if(error instanceof HttpErrorResponse)
+                {
+                    if(error.status == 501){
+                        console.error(error);
+                    }
+                }
+            }
+        );
+    }    
+  }
+}
+
+
+```
+
+```ts
+return next.handle(request)
+  .do(event => {
+    if (event instanceof HttpResponse) {
+      this.logger.logDebug(event);
+    }
+  })
+  .catch(err => { 
+    console.log('Caught error', err);
+    return Observable.throw(err);
+  });
+
+```
+
+
+### bug fixed 
+> HTTP_INTERCEPTORS are reset when a lazy loaded module imports another module importing HttpClientModule(#20575)
+
+### Blog
+
+> https://blog.angularindepth.com/insiders-guide-into-interceptors-and-httpclient-mechanics-in-angular-103fbdb397bf
+
+> https://theinfogrid.com/tech/developers/angular/angular-5-token-based-authentication/

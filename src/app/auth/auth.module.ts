@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
+import { ReactiveFormsModule } from '@angular/forms';
+
 
 
 
@@ -29,7 +31,8 @@ import * as fromContainers from './containers';
     StoreModule.forFeature('auth', fromAuthStore.reducers),
     EffectsModule.forFeature([
       ...fromAuthStore.effects
-    ])
+    ]),
+    ReactiveFormsModule,
   ],
   exports: [
     ...fromContainers.containers,

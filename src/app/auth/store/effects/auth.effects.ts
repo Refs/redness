@@ -17,7 +17,6 @@ import { Observable, of } from 'rxjs';
 import { Credentials } from '../../models/user';
 import { AuthService } from '../../services/auth.service';
 import { LogoutConfirmationDialogComponent } from '../../components/logout-confirmation-dialog/logout-confirmation-dialog.component';
-// import { LoginSuccess } from '../actions/auth-api.actions';
 
 
 @Injectable()

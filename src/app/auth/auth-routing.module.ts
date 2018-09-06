@@ -2,7 +2,11 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Routes, RouterModule } from '@angular/router';
 
-const routes: Routes = [];
+import * as fromContainers from './containers';
+
+const routes: Routes = [
+  {path: 'login', component: fromContainers.LoginPageComponent}
+];
 
 @NgModule({
   declarations: [],
