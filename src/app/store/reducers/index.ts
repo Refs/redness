@@ -1,10 +1,18 @@
 import { RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
 
-import { ActionReducerMap, createFeatureSelector } from '@ngrx/store';
+import { ActionReducerMap, createFeatureSelector, ActionReducer, MetaReducer } from '@ngrx/store';
+
+import { localStorageSync } from 'ngrx-store-localstorage';
+
+import { storeFreeze } from 'ngrx-store-freeze';
+
+
+
 
 import * as fromRouter from '@ngrx/router-store';
 
 import { Params } from '@angular/router';
+import { environment } from 'src/environments/environment';
 
 export interface RouterStateUrl {
   url: string;
@@ -21,6 +29,17 @@ export interface State {
 export const reducers: ActionReducerMap<State> = {
   routerReducer: fromRouter.routerReducer,
 };
+
+export function localStorageSyncReducer(reducer: ActionReducer<any>): ActionReducer<any> {
+  return localStorageSync({
+    keys: ['auth'],
+    rehydrate : true,
+  })(reducer);
+}
+
+export const metaReducers: MetaReducer<State>[] = !environment.production
+  ? [storeFreeze, localStorageSyncReducer]
+  : [localStorageSyncReducer];
 
 export const getRouterState = createFeatureSelector<fromRouter.RouterReducerState<RouterStateUrl>>('routerReducer');
 
@@ -41,3 +60,8 @@ export class CustomSerializer implements fromRouter.RouterStateSerializer<Router
     return { url, queryParams, params };
   }
 }
+
+
+
+
+

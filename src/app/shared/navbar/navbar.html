@@ -1,29 +1,26 @@
 
 <nav>
   <mat-toolbar>
-    <mat-progress-bar *ngIf="progressBarShow$ | async" mode="indeterminate"></mat-progress-bar>
-
-    <button style="color: rgb(235, 154, 154)" mat-icon-button>
-      <mat-icon>
-        menu
-      </mat-icon>
-    </button>
-    <div class="logo" >
+    <ng-content select="mat-progress-bar"></ng-content>
+    <ng-content select=".toggle-button" ></ng-content>
+    <div class="logo-wrap" >
       <a routerLink="/">
-        <img class="collapsed" src="../../../assets/img/homepage/angular-white-transparent.svg" >
+        <ng-content select=".logo"></ng-content>
       </a>
     </div>
-    <a class="navbar-hide-small" mat-button *ngFor="let key of navMenu$ | async"
-     [routerLink]="key.link">{{key.des}}</a>
-
-     <a href="" mat-button style="margin-left: auto">登陆</a>
+    <div class="menu-wrap" *ngIf="userLogged">
+      <a class="navbar-hide-small" mat-button *ngFor="let key of navMenu"
+       [routerLink]="key.link">{{key.des}}</a>
+    </div>
+    <div class="flex-spacer"></div>
+     <ng-content></ng-content>
   </mat-toolbar>
 </nav>
 
-<nav class="navbar-show-small">
+<nav class="navbar-show-small" *ngIf="userLogged">
   <div class= "flex-wrap">
       <a mat-button class="docs-navbar-link"
-      *ngFor="let key of navMenu$ | async"
+      *ngFor="let key of navMenu"
       [routerLink]="key.link">{{key.des}}</a>
   </div>
 </nav>

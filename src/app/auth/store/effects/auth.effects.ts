@@ -69,7 +69,12 @@ export class AuthEffects {
         LogoutConfirmationDialogComponent,
         undefined,
         boolean
-      >(LogoutConfirmationDialogComponent);
+      >(LogoutConfirmationDialogComponent,{
+        width: '300px',
+        position: {
+          // top: '200px'
+        }
+      });
       return dialogRef.afterClosed();
     }),
     map(

@@ -4,16 +4,15 @@ import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { ReactiveFormsModule } from '@angular/forms';
 
-
-
-
 import { AuthRoutingModule } from './auth-routing.module';
 import { AppMaterialModule } from '../app-material.module';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { HttpClientModule } from '@angular/common/http';
 
 
-// import { reducers } from './store/reducers';
+
+
 import * as fromAuthStore  from './store';
-
 import * as fromComponents from './components';
 import * as fromContainers from './containers';
 
@@ -33,11 +32,16 @@ import * as fromContainers from './containers';
       ...fromAuthStore.effects
     ]),
     ReactiveFormsModule,
+    FlexLayoutModule,
+    HttpClientModule,
   ],
   exports: [
     ...fromContainers.containers,
     ...fromComponents.components,
   ],
   providers: [],
+  entryComponents: [
+    fromComponents.LogoutConfirmationDialogComponent
+  ]
 })
 export class AuthModule {}

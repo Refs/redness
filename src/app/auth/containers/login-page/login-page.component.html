@@ -1,5 +1,20 @@
-<app-login-form
-  (submitted)="onSubmit($event)"
-  [pending]="pending$ | async"
-  [errorMessage]="error$ | async">
-></app-login-form>
+
+<div class="flex-container" fxLayout="column"  style="margin-top: 30px;">
+  <div class="card-container" fxLayout="row" fxLayoutAlign="center">
+    <div fxFlex="90%"
+      fxFlex.xs="90%"
+      fxFlex.sm="60%"
+      fxFlex.md="50%"
+      fxFlex.lg="30%"
+      fxFlex.xl="25%"
+    >
+     <app-login-form
+        (submitted)="onSubmit($event)"
+        [pending]="pending$ | async"
+        [errorMessage]="error$ | async">
+      ></app-login-form>
+    </div>
+  </div>
+
+</div>
+

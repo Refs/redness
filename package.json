@@ -36,10 +36,12 @@
     "jquery-modal": "^0.9.1",
     "ng-pick-datetime": "^6.0.16",
     "ngrx-store-freeze": "^0.2.4",
+    "ngrx-store-localstorage": "^5.0.1",
     "ngx-echarts": "^4.0.0",
     "ngx-perfect-scrollbar": "^6.3.0",
-    "rxjs": "^6.0.0",
+    "rxjs": "^6.3.2",
     "rxjs-compat": "^6.3.1",
+    "typescript": "^2.9.2",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
@@ -66,7 +68,6 @@
     "mockjs": "^1.0.1-beta3",
     "protractor": "~5.4.0",
     "ts-node": "~5.0.1",
-    "tslint": "~5.9.1",
-    "typescript": "~2.7.2"
+    "tslint": "~5.9.1"
   }
 }

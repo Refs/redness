@@ -3,17 +3,14 @@ import { HttpClient } from "@angular/common/http";
 import { map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-
-
-export interface Navmenu {
-  title: string;
-  link:  string;
-  des:   string;
-}
+import { Navmenu } from './nav.model';
 
 
 
-@Injectable()
+
+@Injectable({
+  providedIn: 'root'
+})
 export class NavbarService {
   constructor(private http: HttpClient) {}
 

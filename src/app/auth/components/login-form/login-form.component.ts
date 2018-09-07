@@ -1,5 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+
+import { LoginFormService } from '../../services/login-from.service';
+
 
 import { Credentials } from '../../models/user';
 
@@ -11,17 +13,12 @@ import { Credentials } from '../../models/user';
 })
 export class LoginFormComponent implements OnInit {
 
-  public form: FormGroup = new FormGroup({
-    username: new FormControl(''),
-    password: new FormControl('')
-  })
-
   @Input()
   public set pending (isPending: boolean) {
     if ( isPending ) {
-      this.form.disable();
+      this.loginFormService.form.disable();
     } else {
-      this.form.enable();
+      this.loginFormService.form.enable();
     }
   }
 
@@ -31,14 +28,20 @@ export class LoginFormComponent implements OnInit {
   @Output()
   public submitted = new EventEmitter<Credentials>();
 
-  constructor() { }
+  constructor(
+    public loginFormService: LoginFormService
+  ) { }
 
   ngOnInit() {}
 
   public submit () {
-    if (this.form.valid) {
-      this.submitted.emit(this.form.value)
+    if (this.loginFormService.form.valid) {
+      this.submitted.emit(this.loginFormService.form.value)
     }
+  }
+
+  public onClear () {
+    this.loginFormService.initializeFormGroup();
   }
 
 }

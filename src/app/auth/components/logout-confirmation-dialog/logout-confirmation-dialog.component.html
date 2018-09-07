@@ -1,3 +1,6 @@
-<p>
-  logout-confirmation-dialog works!
-</p>
+<h2 mat-dialog-title>登出</h2>
+<mat-dialog-content>您确定要退出么？</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>否</button>
+  <button mat-button [mat-dialog-close]="true">是</button>
+</mat-dialog-actions>

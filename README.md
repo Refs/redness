@@ -1,5 +1,52 @@
 # Red
 
+<!-- TOC -->
+
+- [Red](#red)
+    - [fix the scss inspect in angular cli 6 (issues: 9099)](#fix-the-scss-inspect-in-angular-cli-6-issues-9099)
+        - [Global level scss](#global-level-scss)
+        - [Component level Scss](#component-level-scss)
+    - [config the project structure](#config-the-project-structure)
+    - [integrate jquery and jquery plugin](#integrate-jquery-and-jquery-plugin)
+    - [ng add](#ng-add)
+        - [use ng add to integrate @angular/material](#use-ng-add-to-integrate-angularmaterial)
+    - [integrate ngrx/platform](#integrate-ngrxplatform)
+    - [integrate echarts](#integrate-echarts)
+    - [lazyloading module 404 router config](#lazyloading-module-404-router-config)
+    - [Ngrx : How to share store among modules (main module / feature module)](#ngrx--how-to-share-store-among-modules-main-module--feature-module)
+    - [rxjs](#rxjs)
+    - [custom our own module](#custom-our-own-module)
+    - [mock data](#mock-data)
+        - [json-server](#json-server)
+        - [@delon/mock alibaba](#delonmock-alibaba)
+    - [Auth module (local storage)](#auth-module-local-storage)
+        - [Goals](#goals)
+        - [Benefits](#benefits)
+        - [Actions](#actions)
+        - [Action Categories](#action-categories)
+        - [States](#states)
+        - [SELECTORS](#selectors)
+        - [state changes](#state-changes)
+        - [EFFECTS](#effects)
+        - [Router](#router)
+    - [the Persist of ngrx store (state rehydrate)](#the-persist-of-ngrx-store-state-rehydrate)
+    - [Ng-Content directive](#ng-content-directive)
+    - [the import of the eager module](#the-import-of-the-eager-module)
+    - [Angular Http Intercept](#angular-http-intercept)
+        - [The use of intercept](#the-use-of-intercept)
+        - [the implementation of intercept](#the-implementation-of-intercept)
+        - [bug fixed](#bug-fixed)
+        - [Blog](#blog)
+        - [we can use the interceptor to do three things](#we-can-use-the-interceptor-to-do-three-things)
+        - [we can use the any store slice in component/interceptor of any module](#we-can-use-the-any-store-slice-in-componentinterceptor-of-any-module)
+    - [utilize the form service to handle form](#utilize-the-form-service-to-handle-form)
+    - [initialize the ngrx store](#initialize-the-ngrx-store)
+    - [the flex-layout bug](#the-flex-layout-bug)
+    - [the entryComponents fo material dialog](#the-entrycomponents-fo-material-dialog)
+    - [the very good css we can use to set width and height](#the-very-good-css-we-can-use-to-set-width-and-height)
+
+<!-- /TOC -->
+
 ## fix the scss inspect in angular cli 6 (issues: 9099)
 
 ### Global level scss
@@ -884,6 +931,39 @@ export class AuthGuardServices implements CanActivate {
 
 ## the Persist of ngrx store (state rehydrate)
 
+```ts
+//root index.ts
+
+import { localStorageSync } from 'ngrx-store-localstorage';
+import { storeFreeze } from 'ngrx-store-freeze';
+
+// custom metaReducer function
+export function localStorageSyncReducer(reducer: ActionReducer<any>): ActionReducer<any> {
+  return localStorageSync({
+    keys: ['layout', 'router', 'books', 'auth'],
+    rehydrate : true,
+  })(reducer);
+}
+
+export function localStorageSyncReducer(reducer: ActionReducer<any>): ActionReducer<any> {
+  return localStorageSync({
+    keys: ['layout', 'router', 'books', 'auth'],
+    rehydrate : true,
+  })(reducer);
+}
+
+export const metaReducers: MetaReducer<State>[] = !environment.production
+  ? [logger, storeFreeze, localStorageSyncReducer]
+  : [localStorageSyncReducer];
+
+```
+
+```ts
+// app.module.ts
+StoreModule.forRoot(reducers, { metaReducers }),
+
+```
+
 
 ## Ng-Content directive
 
@@ -1040,3 +1120,269 @@ return next.handle(request)
 > https://blog.angularindepth.com/insiders-guide-into-interceptors-and-httpclient-mechanics-in-angular-103fbdb397bf
 
 > https://theinfogrid.com/tech/developers/angular/angular-5-token-based-authentication/
+
+
+### we can use the interceptor to do three things
+
+1. we can set request's header authentication together;
+2. we can handle all response error together;
+3. if the token or session has been expired
+  * we can initial the state, that mean's we have to add an action to clear the auth state, then we redirect the user to the login page;
+  * then redirect the user to the login page; 
+
+### we can use the any store slice in component/interceptor of any module
+
+```ts
+// app.component.ts
+
+
+import * as fromAuth from '@example-app/auth/reducers';
+import * as fromRoot from '@example-app/reducers';
+
+import { Injectable } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable()
+
+export class MyInterceptor implements HttpInterceptor {
+
+  constructor(private store: Store<fromRoot.State>) {
+    /**
+     * Selectors can be applied with the `select` operator which passes the state
+     * tree to the provided selector
+     */
+    this.showSidenav$ = this.store.pipe(select(fromRoot.getShowSidenav));
+    this.loggedIn$ = this.store.pipe(select(fromAuth.getLoggedIn));
+  }
+
+  intercept(req: HttpRequest<any>, next:HttpHandler): Observable<HttpEvent<any> {
+
+    // we will use the request clone() method , what it will do is to exactly copy our request .  clone provides few parameters , so we can create a meta object 
+    let request =  req.clone({
+       headers:new HttpHeaders().append('Authorization','abcd') 
+
+       body : undefined 
+    })
+
+    // to intercept the response we have a new method which is provided by rxjs 'do()' . do will be called when the response is ready  
+    return next.handle(request). next.handle(request).do(
+            (event:any) => {},
+            (error:any)=>{
+                if(error instanceof HttpErrorResponse)
+                {
+                    if(error.status == 501){
+                        console.error(error);
+                    } else if (error.status == 419) {
+                      this.store.dispath(' Clear Auth State Action'),
+                      this.router.navigate(['/login'])
+                    }
+                }
+            }
+        );
+    }    
+  }
+}
+
+
+```
+
+
+
+## utilize the form service to handle form 
+
+> https://github.com/CodAffection/Angular-Material-CRUD-Design
+
+1. the form service
+
+```ts
+import { Injectable } from '@angular/core';
+import { FormGroup, FormControl, Validators } from "@angular/forms";
+
+@Injectable({
+  providedIn: 'root'
+})
+export class EmployeeService {
+
+  constructor() { }
+
+  form: FormGroup = new FormGroup({
+    $key: new FormControl(null),
+    fullName: new FormControl('', Validators.required),
+    email: new FormControl('', Validators.email),
+    mobile: new FormControl('', [Validators.required, Validators.minLength(8)]),
+    city: new FormControl(''),
+    gender: new FormControl('1'),
+    department: new FormControl(0),
+    hireDate: new FormControl(''),
+    isPermanent: new FormControl(false)
+  });
+
+  initializeFormGroup() {
+    this.form.setValue({
+      $key: null,
+      fullName: '',
+      email: '',
+      mobile: '',
+      city: '',
+      gender: '1',
+      department: 0,
+      hireDate: '',
+      isPermanent: false
+    });
+  }
+}
+
+
+```
+
+2. the form component
+
+```ts
+// component
+import { Component, OnInit } from '@angular/core';
+
+import { EmployeeService } from '../../shared/employee.service';
+
+@Component({
+  selector: 'app-employee',
+  templateUrl: './employee.component.html',
+  styleUrls: ['./employee.component.css']
+})
+export class EmployeeComponent implements OnInit {
+
+  constructor(private service: EmployeeService) { }
+
+  departments = [
+    { id: 3, value: 'Dep 1' },
+    { id: 2, value: 'Dep 2' },
+    { id: 3, value: 'Dep 3' }];
+
+  ngOnInit() {
+  }
+
+  onClear() {
+    this.service.form.reset();
+    this.service.initializeFormGroup();
+  }
+}
+
+```
+
+3. the form component
+
+<form [formGroup]="service.form" class="normal-form">
+  <mat-grid-list cols="2" rowHeight="300px">
+    <mat-grid-tile>
+      <div class="controles-container">
+        <input type="hidden" formControlName="$key">
+        <mat-form-field>
+          <input formControlName="fullName" matInput placeholder="Full Name*">
+          <mat-error>This field is mandatory.</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+          <input formControlName="email" matInput placeholder="Email">
+          <mat-error>Invalid email address.</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+          <input formControlName="mobile" matInput placeholder="Mobile*">
+          <mat-error *ngIf="service.form.controls['mobile'].errors?.required">This field is mandatory.</mat-error>
+          <mat-error *ngIf="service.form.controls['mobile'].errors?.minlength">Minimum 8 charactors needed.</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+          <input formControlName="city" matInput placeholder="City">
+        </mat-form-field>
+      </div>
+    </mat-grid-tile>
+    <mat-grid-tile>
+      <div class="controles-container">
+        <div class="add-bottom-padding">
+          <mat-radio-group formControlName="gender">
+            <mat-radio-button value="1">Male</mat-radio-button>
+            <mat-radio-button value="2">Female</mat-radio-button>
+            <mat-radio-button value="3">Other</mat-radio-button>
+          </mat-radio-group>
+        </div>
+        <mat-form-field>
+          <mat-select formControlName="department" placeholder="Department">
+            <mat-option>None</mat-option>
+            <ng-container *ngFor="let department of departments">
+              <mat-option value="{{department.id}}">{{department.value}}</mat-option>
+            </ng-container>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <input formControlName="hireDate" matInput [matDatepicker]="picker" placeholder="Hire Date">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+        <div class="add-bottom-padding">
+          <mat-checkbox formControlName="isPermanent">Permanent Employee</mat-checkbox>
+        </div>
+        <div class="button-row">
+          <button mat-raised-button color="primary" type="submit" [disabled]="service.form.invalid">Submit</button>
+          <button mat-raised-button color="warn" (click)="onClear()">Clear</button>
+        </div>
+      </div>
+    </mat-grid-tile>
+  </mat-grid-list>
+</form>
+
+## initialize the ngrx store
+
+## the flex-layout bug
+
+1. update typescript 2.9.2
+2. update rxjs 6.3.2
+3. update flex-layout beta 18
+
+## the entryComponents fo material dialog
+
+we have add the component which we want to show on dialog to the meta data of feather module's entryComponent array
+
+```ts
+ @NgModule({
+  declarations: [
+    ...fromContainers.containers,
+    ...fromComponents.components,
+  ],
+  imports: [
+  ],
+  exports: [
+    ...fromContainers.containers,
+    ...fromComponents.components,
+  ],
+  providers: [],
+  entryComponents: [
+    fromComponents.LogoutConfirmationDialogComponent
+  ]
+})
+export class AuthModule {}
+```
+
+## the very good css we can use to set width and height 
+
+```css
+:host {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+}
+
+```
+
+
+1.当前目标
+  angular 用户验证模块开发
+  angular interceptor 拦截器开发
+2.问题
+暂无
+3.本周总结
+  angular升6.0
+  angular mock api 模块
+  用户验证模块 状态管理部分
+  angular 培训课程一
+4.下周计划
+  完善并测试用户验证模块
+  date time picker
+  tree 模块封装
