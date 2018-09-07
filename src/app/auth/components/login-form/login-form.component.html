@@ -13,6 +13,9 @@
               <mat-error *ngIf="loginFormService.form.controls['password'].errors?.required">请输入密码 </mat-error>
               <mat-error *ngIf="loginFormService.form.controls['password'].errors?.minlength">密码最少四位</mat-error>
           </mat-form-field>
+          <p *ngIf="errorMessage" class="loginError">
+            {{ errorMessage }}
+          </p>
           <div class="button-row">
             <button mat-raised-button color="primary" type="submit" [disabled]="loginFormService.form.invalid">Submit</button>
             <button mat-raised-button color="warn" (click)="onClear()">Clear</button>

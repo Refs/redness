@@ -44,6 +44,8 @@
     - [the flex-layout bug](#the-flex-layout-bug)
     - [the entryComponents fo material dialog](#the-entrycomponents-fo-material-dialog)
     - [the very good css we can use to set width and height](#the-very-good-css-we-can-use-to-set-width-and-height)
+    - [The remaining problems of auth module](#the-remaining-problems-of-auth-module)
+    - [The style of the mat-menu](#the-style-of-the-mat-menu)
 
 <!-- /TOC -->
 
@@ -1371,18 +1373,58 @@ export class AuthModule {}
 
 ```
 
+## The remaining problems of auth module
 
-1.当前目标
-  angular 用户验证模块开发
-  angular interceptor 拦截器开发
-2.问题
-暂无
-3.本周总结
-  angular升6.0
-  angular mock api 模块
-  用户验证模块 状态管理部分
-  angular 培训课程一
-4.下周计划
-  完善并测试用户验证模块
-  date time picker
-  tree 模块封装
+1. when we fail to login, we couldn't be noticed;
+2. The register page
+3. The user center 
+
+## The style of the mat-menu
+
+1. if we want the mat-menu show below the button, we have to set the mat-menu's input value
+
+```html
+<mat-menu #controlPanelPicker="matMenu" yPosition="below" overlapTrigger=false>
+  <ng-content></ng-content>
+</mat-menu>
+```
+
+2. remove the mat-menu's padding
+
+```css
+.mat-menu-content {
+  padding: 0px !important;
+}
+```
+3. panel arrow
+
+```html
+<mat-menu #controlPanelPicker="matMenu" yPosition="below" overlapTrigger=false>
+  <div class="panel-arrow"></div>
+</mat-menu>
+
+```
+
+```scss
+.panel-arrow {
+    position: absolute;
+    display: block;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 5px;
+    border-top-width: 0;
+    border-bottom-color: rgba(217, 217, 217, 0.7);
+    top: 3px;
+    right: 16px;
+
+    &:after {
+    content: " ";
+    top: 1px;
+    margin-left: -4px;
+    border-top-width: 0;
+    border-bottom-color: #fff;
+  }
+}
+```

@@ -32,7 +32,12 @@ export class LoginFormComponent implements OnInit {
     public loginFormService: LoginFormService
   ) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.loginFormService.form.valueChanges.subscribe(()=>{
+      // this.errorMessage = null;
+      // console.log(1);
+    })
+  }
 
   public submit () {
     if (this.loginFormService.form.valid) {

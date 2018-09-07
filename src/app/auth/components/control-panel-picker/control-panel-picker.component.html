@@ -1,0 +1,11 @@
+
+<span>
+  欢迎您！{{username}}
+</span>
+
+<button mat-icon-button [matMenuTriggerFor]="controlPanelPicker">
+  <mat-icon style="color: white">account_circle</mat-icon>
+</button>
+<mat-menu #controlPanelPicker="matMenu" yPosition="below" overlapTrigger=false>
+  <ng-content></ng-content>
+</mat-menu>

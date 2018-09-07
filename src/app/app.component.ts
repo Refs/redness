@@ -21,8 +21,21 @@ import { Navmenu, NavbarService } from './shared/navbar';
            <mat-icon>menu</mat-icon>
         </button>
         <mat-progress-bar  mode="indeterminate"></mat-progress-bar>
-        <img class="logo" src="../assets/img/homepage/angular-white-transparent.svg" >
-        <button style="color: white;" mat-button (click)="logout()" *ngIf ="userLogged$ | async">退出</button>
+        <img class="logo" src="../assets/img/homepage/angular-white-transparent.svg">
+
+        <app-control-panel-picker [username]= "username" *ngIf ="userLogged$ | async">
+            <div class="panel-arrow"></div>
+            <button mat-menu-item>
+              <mat-icon>settings</mat-icon>个人中心
+            </button>
+            <button mat-menu-item>
+              <mat-icon>settings</mat-icon>设置
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="logout()">
+              <mat-icon>settings</mat-icon>退出登录
+            </button>
+        </app-control-panel-picker>
       </red-navbar>
       <router-outlet></router-outlet>
   `,
@@ -36,6 +49,7 @@ export class AppComponent implements OnInit, AfterViewInit{
   public userLogged$: Observable<boolean>;
 
   public progressBarShow$: Observable<boolean>;
+  public username: string = '大哥';
 
   constructor(
     private progressBarService: fromCommonsServices.ProcessBarService,

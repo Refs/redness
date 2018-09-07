@@ -22,6 +22,7 @@ export class LoginPageComponent implements OnInit {
   constructor(private store: Store<fromAuthStore.State>) { }
 
   ngOnInit() {
+
   }
 
   onSubmit(credentials: Credentials) {
