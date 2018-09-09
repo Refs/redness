@@ -13,6 +13,8 @@ import { Navmenu, NavbarService } from './shared/navbar';
 
 
 
+
+
 @Component({
   selector: 'app-root',
   template: `
@@ -20,7 +22,7 @@ import { Navmenu, NavbarService } from './shared/navbar';
         <button class="toggle-button" style="color: white" mat-icon-button>
            <mat-icon>menu</mat-icon>
         </button>
-        <mat-progress-bar  mode="indeterminate"></mat-progress-bar>
+        <mat-progress-bar *ngIf="progressBarShow$ | async"  mode="indeterminate"></mat-progress-bar>
         <img class="logo" src="../assets/img/homepage/angular-white-transparent.svg">
 
         <app-control-panel-picker [username]= "username" *ngIf ="userLogged$ | async">
@@ -60,6 +62,8 @@ export class AppComponent implements OnInit, AfterViewInit{
 
   ngOnInit(){
     // this.progressBarService.processShow = true;
+    this.progressBarShow$ = this.progressBarService.processShowCast$;
+    this.progressBarService.processShow = true;
     this.navMenu$ = this.navbarService.get();
     this.userLogged$ = this.store.pipe(
       select(fromAuthStore.getLoggedIn)
@@ -67,9 +71,9 @@ export class AppComponent implements OnInit, AfterViewInit{
   }
 
   ngAfterViewInit() {
-    // setTimeout(()=>{
-    //   this.progressBarService.processShow = false;
-    // }, 1000)
+    setTimeout(()=>{
+      this.progressBarService.processShow = false;
+    }, 1000)
   }
 
   public logout () {
