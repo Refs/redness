@@ -1428,3 +1428,165 @@ export class AuthModule {}
   }
 }
 ```
+
+
+## angular cdk portal and portalHost  
+
+> https://www.youtube.com/watch?v=4S3LNdCI46w&t=178s
+
+1. interstitial.service.ts
+
+```ts
+import {
+  ApplicationRef,
+  ComponentFactoryResolver
+  ComponentRef,
+  Inject,
+  Injectable,
+  Injector
+} from '@angular/core';
+
+import {
+  ComponentType,
+  Portal,
+  ComponentPortal,
+  DomPortalHost
+} from '@angular/cdk/portal';
+
+import { DOCUMENT } from '@angular/platform-browser';
+
+import { InterstitialContainerComponent } from './interstitial-container.component';
+
+@Injectable()
+export class InterstitialService {
+  private interstitialContainerPortal: ComponentPortal<InterstitialContainerComponent>;
+
+  private bodyPortalHost: DomPortalHost;
+
+  constructor(
+    @Inject(DOCUMENT) private document: any,
+    private appRef: ApplicationRef,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private injector: Injector
+  ){
+    this.interstitialContainerPortal = new ComponentPortal(InterstitialContainerComponent);
+    this.bodyPortalHost = new DomPortalHost(document.body, this.componentFactoryResolver, this.appRef, this.injector)
+  }
+
+  show() {
+    const componentRef: ComponentRef<InterstitialContainerComponent> = 
+      this.bodyPortalHost.attach(this.interstitialContainerPortal)
+
+    componentRef.instance.close.subscribe(() => this.hide());
+  }
+
+  hide() {
+    this.bodyPortalHost.detach();
+  }
+
+}
+
+```
+
+2. interstitial-container.component.ts
+
+```ts
+import { Component, EventEmitter, Output } from '@angular/core';
+
+@component({
+  selector: 'app-interstitial-container',
+  templateUrl: './interstitial-container.component.html'
+  styleUrls: ['./interstitial-container.component.css']
+})
+export class InterstitialContainerComponent {
+  @Output() close EventEmitter<any> = new EventEmitter<an>();
+
+  constructor(){}
+}
+
+```
+
+3. interstitial-container.component.html
+
+```ts
+<button class='btn-close' (click)="close.next()" > 
+  <span>x</span>
+<button>
+<div class="content">
+  Hi there!
+</div>
+```
+
+
+## EventEmitter subscribe
+
+```ts
+import { Component, NgModule, Injectable, EventEmitter, AfterViewInit } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+
+
+@Injectable()
+export class SharedService {
+    cartData = new EventEmitter<any>();
+} 
+
+@Component({
+  selector: 'app-app',
+  template: `
+    <h1>
+      Main Component <button (click)="onEvent()">onEvent</button>
+    </h1>
+    <p>
+      <app-dashboard></app-dashboard>
+    </p>
+  `,
+})
+export class App implements AfterViewInit {
+  data: any = "Shared Data";
+
+  constructor(private sharedService: SharedService) {
+  }
+
+  ngAfterViewInit() {
+    this.sharedService.cartData.emit("ngAfterViewInit: " + this.data);
+  }
+
+  onEvent() {
+    this.sharedService.cartData.emit("onEvent: " + this.data);
+  }
+}
+
+@Component({
+  selector: 'app-dashboard',
+  template: `
+    <h2>
+      Dashboard component
+    </h2>
+    <p>
+      {{myData}}
+    </p>
+  `,
+})
+export class AppDashboard implements AfterViewInit {
+  myData: any;
+
+  constructor(private sharedService: SharedService) {
+          this.sharedService.cartData.subscribe(
+          (data: any) => {
+            console.log(data);
+            this.myData = data;
+          });
+  }
+
+}
+
+
+@NgModule({
+  imports: [ BrowserModule ],
+  declarations: [ App, AppDashboard ],
+  providers: [ SharedService ],
+  bootstrap: [ App ]
+})
+export class AppModule {}
+
+```
