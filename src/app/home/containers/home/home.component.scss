@@ -1,0 +1,75 @@
+section.content {
+  position: absolute;
+  top: 54px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+@media (max-width: 560px){
+  section.content {
+    top: 90px;
+  }
+}
+
+.mat-sidenav-container {
+  height: calc(100vh - 54px);
+  background: lightblue;
+  .mat-sidenav {
+    width: 220px;
+  }
+
+}
+@media (max-width: 560px){
+  .mat-sidenav-container {
+    height: calc(100vh - 90px);
+  }
+}
+
+
+.mat-expansion-panel-header {
+  cursor: pointer;
+}
+
+// remove the box-shadow of the mat-expansion-panel
+.mat-expansion-panel {
+  transition: none !important;
+  box-shadow: none !important;
+}
+
+.mat-expansion-panel-body {
+  padding: 0 !important;
+}
+
+// custom the indicator
+ .mat-expansion-indicator:after {
+  //  the indicator is actually a block; we can control it's size with padding, and control the weight with border
+  padding: 2px !important;
+  border-width: 0 1px 1px 0 !important;
+}
+
+
+.mat-expansion-panel-header-description {
+  flex-grow: 10 !important;
+}
+
+.mat-list {
+  padding-top: 0px;
+}
+
+.mat-list-item {
+  height: 36px !important;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover{
+    color: #412bbe;
+  }
+  &.active {
+    color: #412bbe;
+  }
+}
+
+
+.mat-list-item-content {
+  padding-left: 38px !important;
+}

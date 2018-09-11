@@ -46,6 +46,9 @@
     - [the very good css we can use to set width and height](#the-very-good-css-we-can-use-to-set-width-and-height)
     - [The remaining problems of auth module](#the-remaining-problems-of-auth-module)
     - [The style of the mat-menu](#the-style-of-the-mat-menu)
+    - [angular cdk portal and portalHost](#angular-cdk-portal-and-portalhost)
+    - [EventEmitter subscribe](#eventemitter-subscribe)
+    - [rxjs bind](#rxjs-bind)
 
 <!-- /TOC -->
 
@@ -1590,3 +1593,37 @@ export class AppDashboard implements AfterViewInit {
 export class AppModule {}
 
 ```
+
+
+## rxjs bind
+
+1. async versus : ?
+
+```html
+<mat-icon>{{ (toggleButtonState$ | async) ? 'close' : 'menu' }}</mat-icon>
+```
+2. fromEvent
+
+```ts
+import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/fromEvent';
+
+@Component({
+  template: '<button #input>Button</button>'
+})
+export class ActionOverviewDescription implements AfterViewInit {
+  @ViewChild('input') button: ElementRef;
+
+  ngAfterViewInit() {
+    let buttonStream$ = Observable.fromEvent(this.button.nativeElement, 'click')
+        .subscribe(res => console.log(res));
+
+  }
+}
+
+let toggleButtonStream$ = fromEvent(this.toggleButton._elementRef.nativeElement, 'click')
+```
+
+
+

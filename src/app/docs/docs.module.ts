@@ -1,10 +1,20 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { DocsComponent } from './docs.components';
+
+import { DocsRoutingModule } from './docs-routing.module';
+
+
 @NgModule({
-  imports: [
-    CommonModule
+  declarations: [
+    DocsComponent
   ],
-  declarations: []
+  imports: [
+    CommonModule,
+    DocsRoutingModule
+  ],
+  exports: [],
+  providers: [],
 })
-export class DocsModule { }
+export class DocsModule {}

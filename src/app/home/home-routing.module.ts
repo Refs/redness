@@ -7,10 +7,14 @@ import * as fromContainers from './containers';
 
 const routes: Routes = [
   {
-    path: 'home',
+    path: '',
     component: fromContainers.HomeComponent,
+    children: [
+      {path: '', pathMatch: 'full', redirectTo: 'dashBoard'},
+      {},
+      {},
+    ]
   },
-  { path: '', pathMatch: 'full', redirectTo: 'home' },
 ];
 
 @NgModule({

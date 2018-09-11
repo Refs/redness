@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { HomeRoutingModule } from './home-routing.module';
-// import { HomeMaterialModule } from './home-material.module';
 import { AppMaterialModule } from '../app-material.module';
 
 

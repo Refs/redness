@@ -5,7 +5,6 @@ import { AuthGuard } from './auth/services/auth-guard.service';
 
 
 const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'home' },
   {
     path: 'home',
     loadChildren: './home/home.module#HomeModule',
@@ -15,15 +14,15 @@ const routes: Routes = [
     path: 'docs',
     loadChildren: './docs/docs.module#DocsModule',
   },
-  {
-    path: 'guides',
-    loadChildren: './guides/guides.module#GuidesModule',
-  },
+  // {
+  //   path: 'guides',
+  //   loadChildren: './guides/guides.module#GuidesModule',
+  // },
   {
     path: 'notfound',
     loadChildren: './notfound/notfound.module#NotfoundModule',
   },
-  // when we set the route like this , we have to set all the module who have pages as lazyloading module, or we won't get the module's page
+  { path: '', pathMatch: 'full', redirectTo: 'home' },
   {
     path: '**', redirectTo: '/notfound'
   }

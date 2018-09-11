@@ -1,8 +1,8 @@
-<!-- <section class="content">
+<section class="content">
   <mat-sidenav-container>
-      <mat-sidenav #sideNav  >
+      <mat-sidenav opened= true #sideNav  >
         <perfect-scrollbar style="width: 100%; max-height: calc( 100vh - 64px );" [config]="">
-          <mat-expansion-panel [expanded]="panel.routerFlag == currentModuleRouter" *ngFor="let panel of sideNavData">
+          <mat-expansion-panel [expanded]="true" *ngFor="let panel of (sideNavMenuDate$ | async)">
             <mat-expansion-panel-header [expandedHeight]="'35px'" [collapsedHeight]=" '35px' ">
               <mat-panel-title>
                 <mat-icon style="color: gray">{{panel.header.icon}}</mat-icon>
@@ -24,4 +24,6 @@
         </perfect-scrollbar>
       </mat-sidenav-content>
     </mat-sidenav-container>
-</section> -->
+</section>
+
+<!-- home -->
